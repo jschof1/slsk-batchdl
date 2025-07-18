@@ -366,3 +366,29 @@ FodyWeavers.xsd
 .aider*
 TODO.md
 install.bat
+
+
+testing-apps/
+.DS_Store
+build-gui.bat
+build-gui.sh
+build-mac-app.py
+docker-compose.web.yml
+Dockerfile.web
+launch-sldl-web.sh
+mac-app/.DS_Store
+sldl
+sldl-web-gui.py
+slsk-batchdl.sln
+Users/jack/Downloads/Cowboy\?/01 The Good The Bad And The Ugly - Theme - Foom "The Good The Bad And The Ugly".mp3
+Users/jack/Downloads/Cowboy\?/02 - The Good, the Bad and the Ugly.mp3
+Users/jack/Downloads/Cowboy\?/02 Hillbilly Song.mp3
+Users/jack/Downloads/Cowboy\?/02-bellaire-brasil-91f6ffc8.mp3
+Users/jack/Downloads/Cowboy\?/07 - El Paso.mp3
+Users/jack/Downloads/Cowboy\?/10 - The Good, the Vlad and the Ugly.mp3
+Users/jack/Downloads/Cowboy\?/3 - Whip Me In The Saloon\!.mp3
+Users/jack/Downloads/Cowboy\?/_index.csv
+Users/jack/Downloads/Cowboy\?/Fugees - Ready Or Not (DJ Zinc Remix)-_Yb0CJwPW14.mp3.incomplete
+Users/jack/Downloads/Cowboy\?/Secret Squirrels \#2 - Track A.mp3
+Users/jack/Downloads/Cowboy\?/Shades of Black - Make you mine.mp3.incomplete
+Users/jack/Downloads/Cowboy\?/Shinehead - Billie Jean.mp3

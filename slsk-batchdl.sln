@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "slsk-batchdl", "slsk-batchd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "slsk-batchdl.Tests", "slsk-batchdl.Tests\slsk-batchdl.Tests.csproj", "{7E61E35A-1422-4C5B-91FD-F32CD3CC9631}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "slsk-batchdl-gui", "slsk-batchdl-gui\slsk-batchdl-gui.csproj", "{A1B2C3D4-E5F6-7890-ABCD-123456789012}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7E61E35A-1422-4C5B-91FD-F32CD3CC9631}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E61E35A-1422-4C5B-91FD-F32CD3CC9631}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E61E35A-1422-4C5B-91FD-F32CD3CC9631}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-123456789012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-123456789012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-123456789012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-123456789012}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

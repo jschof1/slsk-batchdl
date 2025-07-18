@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLDL - Soulseek Batch Downloader</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            margin: 15px 0;
+        }
+        .checkbox-item {
+            margin: 8px 0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .output-container {
+            margin-top: 30px;
+        }
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SLDL - Soulseek Batch Downloader</h1>
+        
+        <div class="form-group">
+            <label for="input">Input (URL, search query, or CSV file path):</label>
+            <input type="text" id="input" placeholder="e.g., https://open.spotify.com/playlist/... or Artist - Track Name">
+        </div>
+        
+        <div class="form-group">
+            <label for="username">Soulseek Username:</label>
+            <input type="text" id="username" placeholder="Your Soulseek username">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Soulseek Password:</label>
+            <input type="password" id="password" placeholder="Your Soulseek password">
+        </div>
+        
+        <div class="form-group">
+            <label for="path">Download Path:</label>
+            <input type="text" id="path" placeholder="e.g., /Users/yourname/Downloads/Music">
+        </div>
+        
+        <div class="checkbox-group">
+            <div class="checkbox-item">
+                <input type="checkbox" id="album-mode">
+                <label for="album-mode">Album mode (download entire albums)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="aggregate-mode">
+                <label for="aggregate-mode">Aggregate mode (download all unique tracks/albums)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="interactive-mode">
+                <label for="interactive-mode">Interactive mode (manually select albums/folders)</label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="max-tracks">Max tracks (leave empty for unlimited):</label>
+            <input type="text" id="max-tracks" placeholder="e.g., 50">
+        </div>
+        
+        <!-- YouTube-specific options -->
+        <div class="checkbox-group">
+            <h3 style="margin: 15px 0 10px 0; color: #333;">🎵 YouTube Enhancement Options</h3>
+            <div style="background: #e7f3ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 14px;">
+                <strong>💡 These options improve YouTube playlist downloads:</strong><br>
+                • Better file naming using original YouTube titles<br>
+                • Enhanced parsing of YouTube video titles and channel names<br>
+                • Retrieval of deleted video information<br>
+                • Fallback to YouTube download if tracks aren't found on Soulseek
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="use-youtube-titles" checked>
+                <label for="use-youtube-titles">📝 Use YouTube source titles for file naming (recommended)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="parse-youtube-titles" checked>
+                <label for="parse-youtube-titles">🔍 Parse YouTube titles into artist/title (--yt-parse)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="get-deleted-youtube">
+                <label for="get-deleted-youtube">🗂️ Retrieve deleted video titles from archive (--get-deleted)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="artist-maybe-wrong">
+                <label for="artist-maybe-wrong">🎭 Artist might be wrong (useful when uploader ≠ artist)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="yt-dlp-fallback">
+                <label for="yt-dlp-fallback">📱 Download from YouTube if not found on Soulseek (--yt-dlp)</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="strict-matching">
+                <label for="strict-matching">🎯 Enable strict title/artist matching for higher quality</label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="length-tolerance">Length tolerance (seconds) - how much track length can differ:</label>
+            <input type="number" id="length-tolerance" value="10" min="1" max="60" placeholder="10">
+        </div>
+        
+        <div>
+            <button onclick="startDownload()" id="download-btn">Download</button>
+            <button onclick="cancelDownload()" id="cancel-btn">Cancel All Downloads</button>
+            <button onclick="checkStatus()">Check Status</button>
+            <button onclick="clearOutput()">Clear Output</button>
+            <button onclick="saveOutput()">Save Output</button>
+        </div>
+        
+        <div id="process-controls" style="margin-top: 15px;">
+            <!-- Dynamic kill buttons will be added here -->
+        </div>
+        
+        <div class="loading" id="loading">
+            Downloading... Please wait...
+        </div>
+        
+        <div class="output-container">
+            <label>Output:</label>
+            <div class="output" id="output">Ready to download...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentProcess = null;
+
+        // Load configuration and check status on page load
+        loadConfig();
+        checkStatus();
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                if (config.username) document.getElementById('username').value = config.username;
+                if (config.password) document.getElementById('password').value = config.password;
+                if (config.path) document.getElementById('path').value = config.path.replace('~', document.location.origin);
+                
+                // Load YouTube enhancement options (use_youtube_titles is not loaded from config as it's web GUI internal only)
+                if (config.parse_youtube_titles !== undefined) document.getElementById('parse-youtube-titles').checked = config.parse_youtube_titles === 'true';
+                if (config.get_deleted_youtube !== undefined) document.getElementById('get-deleted-youtube').checked = config.get_deleted_youtube === 'true';
+                if (config.artist_maybe_wrong !== undefined) document.getElementById('artist-maybe-wrong').checked = config.artist_maybe_wrong === 'true';
+                if (config.yt_dlp_fallback !== undefined) document.getElementById('yt-dlp-fallback').checked = config.yt_dlp_fallback === 'true';
+                if (config.strict_matching !== undefined) document.getElementById('strict-matching').checked = config.strict_matching === 'true';
+                if (config.length_tolerance) document.getElementById('length-tolerance').value = config.length_tolerance;
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+
+        async function saveConfig() {
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                path: document.getElementById('path').value,
+                // YouTube enhancement options (note: use_youtube_titles is not saved as it's web GUI internal only)
+                parse_youtube_titles: document.getElementById('parse-youtube-titles').checked,
+                get_deleted_youtube: document.getElementById('get-deleted-youtube').checked,
+                artist_maybe_wrong: document.getElementById('artist-maybe-wrong').checked,
+                yt_dlp_fallback: document.getElementById('yt-dlp-fallback').checked,
+                strict_matching: document.getElementById('strict-matching').checked,
+                length_tolerance: document.getElementById('length-tolerance').value
+            };
+
+            try {
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+            } catch (error) {
+                console.error('Error saving config:', error);
+            }
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                
+                if (status.success) {
+                    const outputDiv = document.getElementById('output');
+                    let statusText = `📊 Status Check Results:\n\n`;
+                    statusText += `${status.status_message}\n\n`;
+                    
+                    if (status.running_processes.length > 0) {
+                        statusText += `🔍 Process Details:\n`;
+                        status.running_processes.forEach((proc, index) => {
+                            statusText += `\n📋 PID ${proc.pid}:\n`;
+                            statusText += `  ⏱️  Runtime: ${proc.runtime}\n`;
+                            statusText += `  💾 Memory: ${proc.memory_usage}\n`;
+                            statusText += `  🔥 CPU: ${proc.cpu_usage}\n`;
+                            if (proc.network_status.connected_to_soulseek) {
+                                statusText += `  🌐 Soulseek: Connected\n`;
+                                statusText += `  👥 Peers: ${proc.network_status.peer_connections} connections\n`;
+                                if (proc.network_status.downloading) {
+                                    statusText += `  📥 Status: Actively downloading\n`;
+                                } else {
+                                    statusText += `  🔍 Status: Searching/Connecting\n`;
+                                }
+                            } else {
+                                statusText += `  🌐 Soulseek: Connecting...\n`;
+                            }
+                            statusText += `  💻 Command: ${proc.command}\n`;
+                            statusText += `  🛑 [Click "Kill Process ${proc.pid}" button below to terminate]\n`;
+                        });
+                        
+                        // Store process list for kill buttons
+                        window.currentProcesses = status.running_processes;
+                        
+                        // Create kill buttons for each process
+                        createKillButtons(status.running_processes);
+                        
+                        if (!status.can_start_download) {
+                            statusText += `\n⚠️  Cannot start new download while processes are running.\n`;
+                            document.getElementById('download-btn').disabled = true;
+                        }
+                    } else {
+                        statusText += `✅ No running processes found.\n`;
+                        document.getElementById('download-btn').disabled = false;
+                        
+                        // Clear kill buttons when no processes
+                        document.getElementById('process-controls').innerHTML = '';
+                    }
+                    
+                    if (status.port_49998_in_use) {
+                        statusText += `\n🔒 Port 49998 is in use (Soulseek default port).\n`;
+                    }
+                    
+                    outputDiv.textContent = statusText;
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+                document.getElementById('output').textContent = `❌ Error checking status: ${error.message}`;
+            }
+        }
+
+        async function startDownload() {
+            const input = document.getElementById('input').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const path = document.getElementById('path').value.trim();
+            const maxTracks = document.getElementById('max-tracks').value.trim();
+            const albumMode = document.getElementById('album-mode').checked;
+            const aggregateMode = document.getElementById('aggregate-mode').checked;
+            const interactiveMode = document.getElementById('interactive-mode').checked;
+
+            if (!input || !username || !password) {
+                alert('Please fill in all required fields (Input, Username, Password)');
+                return;
+            }
+
+            // Check status first
+            const statusResponse = await fetch('/api/status');
+            const status = await statusResponse.json();
+            if (status.success && !status.can_start_download) {
+                alert('Cannot start download: Another sldl process is already running or port 49998 is in use.');
+                return;
+            }
+
+            // Save configuration
+            await saveConfig();
+
+            // Get YouTube enhancement options
+            const useYoutubeTitles = document.getElementById('use-youtube-titles').checked;
+            const parseYoutubeTitles = document.getElementById('parse-youtube-titles').checked;
+            const getDeletedYoutube = document.getElementById('get-deleted-youtube').checked;
+            const artistMaybeWrong = document.getElementById('artist-maybe-wrong').checked;
+            const ytDlpFallback = document.getElementById('yt-dlp-fallback').checked;
+            const strictMatching = document.getElementById('strict-matching').checked;
+            const lengthTolerance = document.getElementById('length-tolerance').value;
+
+            const data = {
+                input: input,
+                username: username,
+                password: password,
+                path: path,
+                max_tracks: maxTracks,
+                album_mode: albumMode,
+                aggregate_mode: aggregateMode,
+                interactive_mode: interactiveMode,
+                use_youtube_titles: useYoutubeTitles,
+                parse_youtube_titles: parseYoutubeTitles,
+                get_deleted_youtube: getDeletedYoutube,
+                artist_maybe_wrong: artistMaybeWrong,
+                yt_dlp_fallback: ytDlpFallback,
+                strict_matching: strictMatching,
+                length_tolerance: lengthTolerance
+            };
+
+            document.getElementById('download-btn').disabled = true;
+            document.getElementById('cancel-btn').disabled = false;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('output').textContent = 'Starting download...\n';
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Download response:', result);
+                
+                if (result.success) {
+                    let outputText = `✅ ${result.status || 'Download started successfully!'}\n\n`;
+                    if (result.message) {
+                        outputText += `📋 ${result.message}\n\n`;
+                    }
+                    outputText += `🔧 Process ID: ${result.pid}\n`;
+                    outputText += `💻 Command: ${result.command}\n\n`;
+                    outputText += `ℹ️  The download is running in the background. You can:\n`;
+                    outputText += `  • Click "Check Status" to see current activity\n`;
+                    outputText += `  • Monitor the process using PID ${result.pid}\n`;
+                    outputText += `  • Check your download folder for completed files\n`;
+                    
+                    document.getElementById('output').textContent = outputText;
+                    
+                    // Enable status checking and refresh status
+                    document.getElementById('download-btn').disabled = false;
+                    document.getElementById('cancel-btn').disabled = false;
+                    
+                    // Refresh status after a moment to show the new process
+                    setTimeout(checkStatus, 1000);
+                } else {
+                    document.getElementById('output').textContent = `❌ Error: ${result.error}`;
+                }
+            } catch (error) {
+                document.getElementById('output').textContent = `Error: ${error.message}`;
+            } finally {
+                document.getElementById('download-btn').disabled = false;
+                document.getElementById('cancel-btn').disabled = true;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        async function cancelDownload() {
+            if (!confirm('Are you sure you want to cancel all running downloads?')) {
+                return;
+            }
+            
+            try {
+                document.getElementById('cancel-btn').disabled = true;
+                document.getElementById('output').textContent = 'Cancelling all downloads...\n';
+                
+                const response = await fetch('/api/cancel', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('output').textContent = `✅ ${result.message}`;
+                    // Clear process controls
+                    document.getElementById('process-controls').innerHTML = '';
+                    // Re-enable download button
+                    document.getElementById('download-btn').disabled = false;
+                } else {
+                    document.getElementById('output').textContent = `❌ Error: ${result.error}`;
+                }
+            } catch (error) {
+                document.getElementById('output').textContent = `❌ Error cancelling: ${error.message}`;
+            } finally {
+                document.getElementById('cancel-btn').disabled = false;
+            }
+        }
+
+        function createKillButtons(processes) {
+            const controlsDiv = document.getElementById('process-controls');
+            controlsDiv.innerHTML = '';
+            
+            if (processes.length === 0) {
+                return;
+            }
+            
+            const title = document.createElement('h3');
+            title.textContent = '🛑 Process Management';
+            title.style.margin = '10px 0';
+            title.style.color = '#333';
+            controlsDiv.appendChild(title);
+            
+            processes.forEach(proc => {
+                const processDiv = document.createElement('div');
+                processDiv.style.margin = '8px 0';
+                processDiv.style.padding = '8px';
+                processDiv.style.backgroundColor = '#f8f9fa';
+                processDiv.style.border = '1px solid #dee2e6';
+                processDiv.style.borderRadius = '4px';
+                
+                const processInfo = document.createElement('span');
+                processInfo.textContent = `PID ${proc.pid} (Runtime: ${proc.runtime}, CPU: ${proc.cpu_usage}) `;
+                processInfo.style.marginRight = '10px';
+                
+                const killBtn = document.createElement('button');
+                killBtn.textContent = `Kill Process ${proc.pid}`;
+                killBtn.style.backgroundColor = '#dc3545';
+                killBtn.style.color = 'white';
+                killBtn.style.border = 'none';
+                killBtn.style.padding = '4px 8px';
+                killBtn.style.borderRadius = '3px';
+                killBtn.style.cursor = 'pointer';
+                killBtn.onclick = () => killProcess(proc.pid);
+                
+                processDiv.appendChild(processInfo);
+                processDiv.appendChild(killBtn);
+                controlsDiv.appendChild(processDiv);
+            });
+        }
+
+        async function killProcess(pid) {
+            if (!confirm(`Are you sure you want to kill process ${pid}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/kill', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({pid: pid})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('output').textContent = `✅ ${result.message}`;
+                    // Refresh status to update the display
+                    setTimeout(checkStatus, 500);
+                } else {
+                    document.getElementById('output').textContent = `❌ Error killing process ${pid}: ${result.error}`;
+                }
+            } catch (error) {
+                document.getElementById('output').textContent = `❌ Error killing process ${pid}: ${error.message}`;
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = 'Ready to download...';
+        }
+
+        function saveOutput() {
+            const output = document.getElementById('output').textContent;
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sldl-output.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
